@@ -1,29 +1,19 @@
 from typing import List, Optional
 from models import Filter
 
-from SPARQLWrapper import SPARQLWrapper
+from SPARQLWrapper import SPARQLWrapper, N3
 from urllib.error import HTTPError  # Import HTTPError
 
 
-def get_data_from_graphdb(db_host: str, 
-                          db_user: str, 
-                          db_password: str,
-                          filters: Optional[List[Filter]] ,
-                          graph:str = 'https://imaging-plaza.epfl.ch/finalGraph') -> bytes:
-    """
-    Get data from GraphDB.
+from rdflib import Graph
 
-    Args:
-        db_host: The host URL of the GraphDB.
-        db_user: The username for authentication.
-        db_password: The password for authentication.
-        softwareURI: Indentifier of target software
-        graph: Graph where the entry is located
-
-    Returns:
-        The data as a bytes object.
-    """
-
+def get_data_from_graphdb(
+    db_host: str, 
+    db_user: str, 
+    db_password: str,
+    filters: Optional[List[Filter]],
+    graph: str = 'https://imaging-plaza.epfl.ch/finalGraph'
+) -> str:
     if not filters:
         return ""
 
@@ -35,39 +25,48 @@ def get_data_from_graphdb(db_host: str,
             conditions.append(condition)
 
     filter_conditions = ' '.join(conditions)
-    
-    get_relevant_software_query: str = """PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX schema: <http://schema.org/>
-        PREFIX imag: <https://imaging-plaza.epfl.ch/ontology#>
-        SELECT DISTINCT ?s
-        WHERE {{
+
+    query = f"""
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX schema: <http://schema.org/>
+    PREFIX imag: <https://imaging-plaza.epfl.ch/ontology#>
+    PREFIX fuzon: <http://example.org/fuzon#>
+
+    CONSTRUCT 
+    {{
+        ?s fuzon:searchIndexPredicate ?literal .
+        ?s ?p ?o .
+        ?o ?p2 ?o2 .
+        ?o2 ?p3 ?o3 .
+    }}
+    WHERE {{
         GRAPH <{graph}> {{
-            ?s rdf:type schema:SoftwareSourceCode.
+            ?s rdf:type schema:SoftwareSourceCode ;
+            ?p ?o .
+
+            OPTIONAL {{ 
+                ?o ?p2 ?o2 .
+                OPTIONAL {{ ?o2 ?p3 ?o3 }} 
+            }}
+
+            FILTER(isLiteral(?o))
+
+            BIND(str(?o) as ?literal)
             {filter_conditions}
         }}
-        }}""".format( graph=graph, filter_conditions=filter_conditions) 
+    }}
+    """
+
+
 
     sparql = SPARQLWrapper(db_host)
-    sparql.setQuery(get_relevant_software_query)
-    sparql.setReturnFormat('json-ld')
+    sparql.setQuery(query)
+    sparql.setReturnFormat(N3) 
     sparql.setCredentials(user=db_user, passwd=db_password)
-    sparql.addCustomHttpHeader("Accept", "application/sparql-results+json")
-
+    sparql.addCustomHttpHeader("Accept", "application/n-triples")
+    print(query)
     try:
-        print("Executing SPARQL query...")
-        print(f"Query: {get_relevant_software_query}")
-        results = sparql.query().convert()
-        print("Query executed successfully.")
-        print(f"Results: {results}")
-        return results
+        result_bytes = sparql.query().convert()
+        return result_bytes.decode('utf-8')  
     except HTTPError as e:
-        print(f"HTTP error occurred: {e}")
-        print(f"DB Host: {db_host}")
-        print(f"DB User: {db_user}")
-        print(f"DB Password: {db_password}")
-        print(f"Graph: {graph}")
-        print(f"Query: {get_relevant_software_query}")
-        raise
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        raise
+        raise RuntimeError(f"HTTPError during SPARQL query: {e}")
