@@ -12,6 +12,7 @@ load_dotenv()
 
 app = FastAPI()
 
+
 @app.post("/search")
 def search(request: SearchRequest):
     db_host = os.getenv("GRAPHDB_URL")
@@ -23,7 +24,9 @@ def search(request: SearchRequest):
         nt_data = get_data_from_graphdb(db_host, db_user, db_password, request.filters)
 
         # Save to temporary file for Fuzon to read
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.nt', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(
+            mode="w+", suffix=".nt", delete=False
+        ) as tmpfile:
             tmpfile.write(nt_data)
             tmpfile_path = tmpfile.name
 
@@ -49,4 +52,3 @@ def search(request: SearchRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
