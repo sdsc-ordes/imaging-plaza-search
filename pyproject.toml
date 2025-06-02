@@ -1,0 +1,68 @@
+[project]
+name = "Imaging Plaza Search"
+authors = [
+  { name = "Robin Franken", email = "robin.franken@epfl.ch" },
+]
+description = "A microservice for fetching relevant softwares to a certain search term + filters"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "0.1.0"
+
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+    "SPARQLWrapper",
+    "rdflib",
+    "pyshacl",
+    "requests",
+    "pydantic>=2.10.6",
+]
+
+[dependency-groups]
+dev = [
+    "notebook>=7.3.2",
+    "black",
+    "ruff",
+    "mypy",
+]
+
+[project.scripts]
+cli = "your_project_name.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+    ".direnv",
+    ".devenv",
+    ".output",
+]
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = [
+    "W605",   # pycodestyle: invalid-escape-sequence
+    "S102",   # flake8-bandit: exec-builtin
+    "INP",    # flake8-no-pep420
+    "PYI",    # flake8-pyi
+    "PT",     # flake8-pytest-style
+    "PGH",    # pygrep-hooks
+    "PL",     # Pylint
+    "NPY",    # NumPy-specific rules
+    "RUF",    # Ruff-specific rules
+]
+ignore = [
+    "NPY002", # numpy-legacy-random
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**" = ["INP001"]
+"[!t][!e][!s][!t][!s]*/**" = ["PT"]

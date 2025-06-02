@@ -1,5 +1,5 @@
 from typing import List, Optional
-from models import Filter
+from imaging_plaza_search.models import Filter
 
 from SPARQLWrapper import SPARQLWrapper, N3
 from urllib.error import HTTPError  # Import HTTPError

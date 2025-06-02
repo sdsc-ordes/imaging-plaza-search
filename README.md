@@ -8,8 +8,14 @@ input:
 output:
 A list of software URI's to be used to filter the full json-ld on the front-end.
 
-Plan:
-- [ ] Fetch the code from IP fair level calc for doing SPARQL queries on GraphDB endpoint
-- [ ] Make the SPARQL query that filters down the finalGraph
-- [ ] Run that query on the finalGraph, and construct a new nt file
-- [ ] Pipe that file into fuzon together with the initial search term and return a list of IRI's 
+## Example search using API
+1. Navigate to http://127.0.0.1:8000/docs
+2. Click on the /search endpoint
+3. Click on "try it out" top right corner
+4. Paste the below json in the request body.
+
+```
+{ "search": "deep", "filters": [ { "key": "programmingLanguage", "schema": "schema:programmingLanguage", "selected": ["Python"] }, { "key": "featureList", "schema": "schema:featureList", "selected": ["Object detection"] } ] }
+```
+5. Press "Execute" 
+6. Observe the resulting response body containing the labels and URI's of softwares that match your search

@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from models import SearchRequest
-from data_fetch import get_data_from_graphdb
-from pyfuzon.matcher import TermMatcher
+from imaging_plaza_search.models import SearchRequest
+from imaging_plaza_search.data_fetch import get_data_from_graphdb
+from pyfuzon import TermMatcher
 import os
 from dotenv import load_dotenv
 import tempfile
@@ -11,14 +11,6 @@ import tempfile
 load_dotenv()
 
 app = FastAPI()
-
-# # Optional: allow CORS if needed (e.g., frontend access)
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
 
 @app.post("/search")
 def search(request: SearchRequest):
