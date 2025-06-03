@@ -6,3 +6,5 @@ rdflib
 pyshacl
 requests
 pydantic
+pytest
+pyfuzon==0.2.0
