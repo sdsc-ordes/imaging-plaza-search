@@ -31,7 +31,5 @@ nix-develop *args:
   { [ -n "${cmd:-}" ] || cmd=("zsh"); } && \
   nix develop ./tools/nix#default --accept-flake-config --command "${cmd[@]}"
 
-# Manage manifests.
-mod manifests 'tools/just/manifests.just'
 # Manage container images.
 mod image 'tools/just/image.just'

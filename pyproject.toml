@@ -1,12 +1,12 @@
 [project]
-name = "Imaging Plaza Search"
+name = "imaging_plaza_search"
 authors = [
   { name = "Robin Franken", email = "robin.franken@epfl.ch" },
 ]
 description = "A microservice for fetching relevant softwares to a certain search term + filters"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "0.1.0"
+version = "0.0.1"
 
 dependencies = [
     "fastapi==0.115.11",
@@ -17,6 +17,7 @@ dependencies = [
     "pyshacl==0.25.0",
     "requests==2.32.3",
     "pydantic==2.10.3",
+    "pyfuzon==0.4.0",
 ]
 
 [dependency-groups]
@@ -28,7 +29,7 @@ dev = [
 ]
 
 [project.scripts]
-cli = "your_project_name.cli:main"
+cli = "imaging_plaza_search.cli:main"
 
 [build-system]
 requires = ["hatchling"]

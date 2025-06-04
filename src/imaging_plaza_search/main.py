@@ -12,12 +12,13 @@ load_dotenv()
 
 app = FastAPI()
 
+db_host = os.getenv("GRAPHDB_URL")
+db_user = os.getenv("GRAPHDB_USER")
+db_password = os.getenv("GRAPHDB_PASSWORD")
+
 
 @app.post("/search")
 def search(request: SearchRequest):
-    db_host = os.getenv("GRAPHDB_URL")
-    db_user = os.getenv("GRAPHDB_USER")
-    db_password = os.getenv("GRAPHDB_PASSWORD")
 
     try:
         # Get RDF graph from GraphDB in N-Triples format
@@ -35,16 +36,15 @@ def search(request: SearchRequest):
 
         top_terms = matcher.top(request.search, 10)
 
-        def clean_label(label):
-            # If label is an rdflib Literal or similar, get lexical value, else strip quotes if present
-            try:
-                return label.value  # if this fails, except will catch it
-            except AttributeError:
-                return label.strip('"')
-
-        # Return cleaned term labels and URIs only
         results = [
-            {"label": clean_label(term.label), "uri": str(term.uri)}
+            {
+                "label": (
+                    term.label.value
+                    if hasattr(term.label, "value")
+                    else term.label.strip('"')
+                ),
+                "uri": str(term.uri),
+            }
             for term in top_terms
         ]
 

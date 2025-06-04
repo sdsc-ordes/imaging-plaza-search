@@ -17,8 +17,10 @@ COPY --from=ghcr.io/astral-sh/uv:0.6.3 /uv /uvx /bin/
 RUN apt-get update && apt-get install -y git && apt-get clean
 
 WORKDIR /app
-ADD CHANGELOG LICENSE README.md pyproject.toml uv.lock /app
+ADD CHANGELOG LICENSE README.md pyproject.toml uv.lock /app 
 ADD src ./src
+# COPY requirements.txt /app
+# ADD requirements.txt /app
 RUN uv sync --frozen
-
-ENTRYPOINT ["uv", "run", "uvicorn", "src.imaging-plaza-search.main:app", "--host", "0.0.0.0", "--port", "15400"]
+# RUN pip install --no-cache-dir -r requirements.txt
+ENTRYPOINT ["uv", "run", "uvicorn", "src.imaging_plaza_search.main:app", "--host", "0.0.0.0", "--port", "15400"]
