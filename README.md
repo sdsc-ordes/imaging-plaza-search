@@ -10,8 +10,9 @@ A list of software URI's to be used to filter the full json-ld on the front-end.
 
 ## Example search using API
 1. Make sure you have your env variables defined in .env
-2. Run the microservice locally using `uvicorn imaging_plaza_search.main:app --reload --app-dir src`
-3. Navigate to http://127.0.0.1:8000/docs
+2. Build the microservice locally using `just image build`
+3. Run the microservice using `just image run`
+3. Navigate to http://localhost:7123/docs
 4. Click on the /search endpoint
 5. Click on "try it out" top right corner
 6. Paste the below json in the request body.

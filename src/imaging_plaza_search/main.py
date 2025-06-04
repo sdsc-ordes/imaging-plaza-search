@@ -12,12 +12,13 @@ load_dotenv()
 
 app = FastAPI()
 
+db_host = os.getenv("GRAPHDB_URL")
+db_user = os.getenv("GRAPHDB_USER")
+db_password = os.getenv("GRAPHDB_PASSWORD")
+
 
 @app.post("/search")
 def search(request: SearchRequest):
-    db_host = os.getenv("GRAPHDB_URL")
-    db_user = os.getenv("GRAPHDB_USER")
-    db_password = os.getenv("GRAPHDB_PASSWORD")
 
     try:
         # Get RDF graph from GraphDB in N-Triples format
@@ -37,12 +38,15 @@ def search(request: SearchRequest):
 
         results = [
             {
-                "label": (term.label.value if hasattr(term.label, "value") else term.label.strip('"')),
+                "label": (
+                    term.label.value
+                    if hasattr(term.label, "value")
+                    else term.label.strip('"')
+                ),
                 "uri": str(term.uri),
             }
             for term in top_terms
         ]
-
 
         return JSONResponse(content=results)
 

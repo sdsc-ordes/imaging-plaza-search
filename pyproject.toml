@@ -29,7 +29,7 @@ dev = [
 ]
 
 [project.scripts]
-cli = "your_project_name.cli:main"
+cli = "imaging_plaza_search.cli:main"
 
 [build-system]
 requires = ["hatchling"]

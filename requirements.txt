@@ -1,9 +1,0 @@
-fastapi==0.115.11
-uvicorn==0.22.0
-python-dotenv==0.21.1
-SPARQLWrapper==2.0.0
-rdflib==7.1.4
-pyshacl==0.25.0
-requests==2.32.3
-pydantic==2.10.3
-pyfuzon==0.4.0
