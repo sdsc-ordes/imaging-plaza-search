@@ -5,18 +5,12 @@ from urllib.error import HTTPError  # Import HTTPError
 from rdflib import Graph
 
 
-from typing import List, Optional
-from rdflib import Graph
-from SPARQLWrapper import SPARQLWrapper, N3
-from urllib.error import HTTPError
-
-
 def get_data_from_graphdb(
     db_host: str,
     db_user: str,
     db_password: str,
     filters: Optional[List[Filter]],
-    graph: str = "https://imaging-plaza.epfl.ch/finalGraph",
+    graph: str,
 ) -> str:
     """
     Constructs and executes a SPARQL CONSTRUCT query against a GraphDB instance,
@@ -35,15 +29,20 @@ def get_data_from_graphdb(
     Raises:
         RuntimeError: If an HTTPError occurs during the SPARQL query execution.
     """
+
+    is_connected = test_connection(db_host, db_user, db_password)
+
+    print(is_connected)
+
     if not filters:
         return ""
 
     conditions: List[str] = []
     for filter in filters:
-        if filter.selected:
-            values = ", ".join(f'"{val}"' for val in filter.selected)
+        if filter.value:
+            values = ", ".join(f'"{val}"' for val in filter.value)
             condition = (
-                f"?s {filter.schema} ?{filter.key}. FILTER(?{filter.key} IN ({values}))"
+                f"?s {filter.schema_key} ?{filter.key}. FILTER(?{filter.key} IN ({values}))"
             )
             conditions.append(condition)
 
@@ -85,9 +84,33 @@ def get_data_from_graphdb(
     sparql.setReturnFormat(N3)
     sparql.setCredentials(user=db_user, passwd=db_password)
     sparql.addCustomHttpHeader("Accept", "application/n-triples")
-    print(query)
+
     try:
         result_bytes: bytes = sparql.query().convert()
         return result_bytes.decode("utf-8")
+    
     except HTTPError as e:
         raise RuntimeError(f"HTTPError during SPARQL query: {e}")
+
+def test_connection(db_host: str, db_user: str, db_password: str) -> bool:
+    """
+    Tests the connection to the GraphDB instance by executing a simple SPARQL query.
+
+    Parameters:
+        db_host (str): The GraphDB endpoint URL.
+        db_user (str): The username for authentication.
+        db_password (str): The password for authentication.
+
+    Returns:
+        bool: True if the connection is successful, False otherwise.
+    """
+    sparql = SPARQLWrapper(db_host)
+    sparql.setCredentials(user=db_user, passwd=db_password)
+    sparql.setQuery("SELECT ?s WHERE { ?s ?p ?o } LIMIT 1")
+    sparql.setReturnFormat(N3)
+
+    try:
+        sparql.query()
+        return True
+    except HTTPError as e:
+        raise RuntimeError(f"HTTPError during connection test: {e}. Please check that your GRAPHDB_URL is ended in /repositories/imagingplaza")

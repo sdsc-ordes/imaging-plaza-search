@@ -15,14 +15,16 @@ app = FastAPI()
 db_host = os.getenv("GRAPHDB_URL")
 db_user = os.getenv("GRAPHDB_USER")
 db_password = os.getenv("GRAPHDB_PASSWORD")
+graph = os.getenv("GRAPHDB_GRAPH")
 
 
-@app.post("/search")
+@app.post("/v1/search")
 def search(request: SearchRequest):
+    print(request)
 
     try:
         # Get RDF graph from GraphDB in N-Triples format
-        nt_data = get_data_from_graphdb(db_host, db_user, db_password, request.filters)
+        nt_data = get_data_from_graphdb(db_host, db_user, db_password, request.filters, graph)
 
         # Save to temporary file for Fuzon to read
         with tempfile.NamedTemporaryFile(

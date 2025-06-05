@@ -1,0 +1,19 @@
+{
+    "search": "deep",
+    "filters": [
+        {
+            "key": "programmingLanguage",
+            "schema_key": "schema:programmingLanguage",
+            "value": [
+                "Python"
+            ]
+        },
+        {
+            "key": "featureList",
+            "schema_key": "schema:featureList",
+            "value": [
+                "Object detection"
+            ]
+        }
+    ]
+}

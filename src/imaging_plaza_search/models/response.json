@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "label": {
+        "type": "string",
+        "description": "The display name of the software."
+      },
+      "uri": {
+        "type": "string",
+        "format": "uri",
+        "description": "The URI to the software's repository or homepage."
+      }
+    },
+    "required": ["label", "uri"],
+    "additionalProperties": false
+  }
+}
