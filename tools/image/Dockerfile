@@ -20,4 +20,4 @@ WORKDIR /app
 ADD CHANGELOG LICENSE README.md pyproject.toml uv.lock /app 
 ADD src ./src
 RUN uv sync --frozen
-ENTRYPOINT ["uv", "run", "uvicorn", "src.imaging_plaza_search.main:app", "--host", "0.0.0.0", "--port", "15400"]
+ENTRYPOINT ["uv", "run", "uvicorn", "src.imaging_plaza_search.main:app", "--reload", "--host", "0.0.0.0", "--port", "15400"]

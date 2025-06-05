@@ -1,0 +1,1 @@
+{ "search": "deep", "filters": [ { "key": "programmingLanguage", "schema": "schema:programmingLanguage", "selected": ["Python"] }, { "key": "featureList", "schema": "schema:featureList", "selected": ["Object detection"] } ] }
