@@ -1,6 +1,6 @@
 # imaging-plaza-search
 
-A microservice for fetching relevant softwares to a certain search term + filters input. This service will retrieve software from GraphDB and then perform a fuzzy search using [Fuzzon]().
+A microservice for fetching relevant softwares to a certain search term + filters input. This service will retrieve software from GraphDB and then perform a fuzzy search using [Fuzon](https://github.com/sdsc-ordes/fuzon).
 
 ## How to use it?
 
