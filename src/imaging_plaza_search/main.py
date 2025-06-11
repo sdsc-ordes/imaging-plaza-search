@@ -42,7 +42,7 @@ def search(request: SearchRequest):
             {
             "s": {
                 "type": "uri",
-                "value": str(term.uri)
+                "value": str(term.uri)[1:-1] if str(term.uri).startswith("<") and str(term.uri).endswith(">") else str(term.uri)
             }
             }
             for term in top_terms
