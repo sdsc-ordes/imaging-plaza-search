@@ -38,15 +38,22 @@ def search(request: SearchRequest):
 
         top_terms = matcher.top(request.search, 10)
 
-        results = [
-            {
-            "s": {
-                "type": "uri",
-                "value": str(term.uri)[1:-1] if str(term.uri).startswith("<") and str(term.uri).endswith(">") else str(term.uri)
+        results = {
+            "head": {
+            "vars": ["s"]
+            },
+            "results": {
+            "bindings": [
+                {
+                "s": {
+                    "type": "uri",
+                    "value": str(term.uri)[1:-1] if str(term.uri).startswith("<") and str(term.uri).endswith(">") else str(term.uri)
+                }
+                }
+                for term in top_terms
+            ]
             }
-            }
-            for term in top_terms
-        ]
+        }
 
         return JSONResponse(content=results)
 
