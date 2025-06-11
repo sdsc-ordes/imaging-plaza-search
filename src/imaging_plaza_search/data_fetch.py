@@ -1,6 +1,6 @@
 from typing import List, Optional
 from imaging_plaza_search.models import Filter
-from SPARQLWrapper import SPARQLWrapper, N3
+from SPARQLWrapper import SPARQLWrapper, N3, JSON
 from urllib.error import HTTPError  # Import HTTPError
 from rdflib import Graph
 
@@ -81,6 +81,7 @@ def get_data_from_graphdb(
 
     sparql = SPARQLWrapper(db_host)
     sparql.setQuery(query)
+    print(query)
     sparql.setReturnFormat(N3)
     sparql.setCredentials(user=db_user, passwd=db_password)
     sparql.addCustomHttpHeader("Accept", "application/n-triples")
@@ -107,7 +108,7 @@ def test_connection(db_host: str, db_user: str, db_password: str) -> bool:
     sparql = SPARQLWrapper(db_host)
     sparql.setCredentials(user=db_user, passwd=db_password)
     sparql.setQuery("SELECT ?s WHERE { ?s ?p ?o } LIMIT 1")
-    sparql.setReturnFormat(N3)
+    sparql.setReturnFormat(JSON)
 
     try:
         sparql.query()
