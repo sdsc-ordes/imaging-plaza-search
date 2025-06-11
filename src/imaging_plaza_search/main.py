@@ -40,12 +40,10 @@ def search(request: SearchRequest):
 
         results = [
             {
-                "label": (
-                    term.label.value
-                    if hasattr(term.label, "value")
-                    else term.label.strip('"')
-                ),
-                "uri": str(term.uri),
+            "s": {
+                "type": "uri",
+                "value": str(term.uri)
+            }
             }
             for term in top_terms
         ]
