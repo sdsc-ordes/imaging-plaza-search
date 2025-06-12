@@ -34,19 +34,18 @@ def get_data_from_graphdb(
 
     print(is_connected)
 
-    if not filters:
-        return ""
-
     conditions: List[str] = []
-    for filter in filters:
-        if filter.value:
-            values = ", ".join(f'"{val}"' for val in filter.value)
-            condition = (
-                f"?s {filter.schema_key} ?{filter.key}. FILTER(?{filter.key} IN ({values}))"
-            )
-            conditions.append(condition)
-
-    filter_conditions: str = " ".join(conditions)
+    if filters is None:
+        for filter in filters:
+            if filter.value:
+                values = ", ".join(f'"{val}"' for val in filter.value)
+                condition = (
+                    f"?s {filter.schema_key} ?{filter.key}. FILTER(?{filter.key} IN ({values}))"
+                )
+                conditions.append(condition)
+                filter_conditions: str = " ".join(conditions)
+    else:
+        filter_conditions: str = ""
 
     query: str = f"""
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

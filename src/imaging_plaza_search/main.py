@@ -32,11 +32,13 @@ def search(request: SearchRequest):
         ) as tmpfile:
             tmpfile.write(nt_data)
             tmpfile_path = tmpfile.name
-
-        # Initialize Fuzon matcher
-        matcher = TermMatcher.from_files([tmpfile_path])
-
-        top_terms = matcher.top(request.search, 10)
+            # Initialize Fuzon matcher
+            matcher = TermMatcher.from_files([tmpfile_path])
+            if request.search:
+                top_terms = matcher.top(request.search, 10)
+            else:
+                # No search term: return all software URIs
+                top_terms = list(matcher.terms.values())
 
         results = {
             "head": {
@@ -54,7 +56,7 @@ def search(request: SearchRequest):
             ]
             }
         }
-
+        print(results)
         return JSONResponse(content=results)
 
     except Exception as e:
