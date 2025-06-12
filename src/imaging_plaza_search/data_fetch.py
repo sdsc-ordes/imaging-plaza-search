@@ -35,15 +35,14 @@ def get_data_from_graphdb(
     print(is_connected)
 
     conditions: List[str] = []
-    if filters is None:
+    if filters:
         for filter in filters:
-            if filter.value:
-                values = ", ".join(f'"{val}"' for val in filter.value)
-                condition = (
-                    f"?s {filter.schema_key} ?{filter.key}. FILTER(?{filter.key} IN ({values}))"
-                )
-                conditions.append(condition)
-                filter_conditions: str = " ".join(conditions)
+            values = ", ".join(f'"{val}"' for val in filter.value)
+            condition = (
+                f"?s {filter.schema_key} ?{filter.key}. FILTER(?{filter.key} IN ({values}))"
+            )
+            conditions.append(condition)
+            filter_conditions: str = " ".join(conditions)
     else:
         filter_conditions: str = ""
 
