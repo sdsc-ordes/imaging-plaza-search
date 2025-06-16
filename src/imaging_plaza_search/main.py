@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from imaging_plaza_search.models import SearchRequest
 from imaging_plaza_search.data_fetch import get_data_from_graphdb
+from rdflib import Graph
 from pyfuzon import TermMatcher
 import os
 from dotenv import load_dotenv
@@ -26,36 +27,47 @@ def search(request: SearchRequest):
         # Get RDF graph from GraphDB in N-Triples format
         nt_data = get_data_from_graphdb(db_host, db_user, db_password, request.filters, graph)
 
-        # Save to temporary file for Fuzon to read
-        with tempfile.NamedTemporaryFile(
-            mode="w+", suffix=".nt", delete=False
-        ) as tmpfile:
-            tmpfile.write(nt_data)
-            tmpfile_path = tmpfile.name
+        if request.search:
+            # Save to temporary file for Fuzon to read
+            with tempfile.NamedTemporaryFile(mode="w+", suffix=".nt", delete=False) as tmpfile:
+                tmpfile.write(nt_data)
+                tmpfile_path = tmpfile.name
+
             # Initialize Fuzon matcher
             matcher = TermMatcher.from_files([tmpfile_path])
-            if request.search:
-                top_terms = matcher.top(request.search, 10)
-            else:
-                # No search term: return all software URIs
-                top_terms = list(matcher.terms.values())
+            top_terms = matcher.top(request.search, 10)
+
+        else:
+            g = Graph()
+            g.parse(data=nt_data, format="nt")
+            # If no search term, get all URIs from the (optionally filtered) graph
+            qres = g.query("""
+            PREFIX schema: <http://schema.org/>
+                SELECT DISTINCT ?s WHERE { ?s ?p ?o .}
+            """)
+            top_terms = [row[0] for row in qres]  
+            print("SPARQL query URIs:")
+            for row in qres:
+                print(str(row[0]))
+
 
         results = {
             "head": {
-            "vars": ["s"]
+                "vars": ["s"]
             },
             "results": {
-            "bindings": [
-                {
-                "s": {
-                    "type": "uri",
-                    "value": str(term.uri)[1:-1] if str(term.uri).startswith("<") and str(term.uri).endswith(">") else str(term.uri)
-                }
-                }
-                for term in top_terms
-            ]
+                "bindings": [
+                    {
+                        "s": {
+                            "type": "uri",
+                            "value": str(term)[1:-1] if str(term).startswith("<") and str(term).endswith(">") else str(term)
+                        }
+                    }
+                    for term in top_terms
+                ]
             }
         }
+
         print(results)
         return JSONResponse(content=results)
 
