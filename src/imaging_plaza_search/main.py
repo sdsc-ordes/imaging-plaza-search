@@ -35,7 +35,7 @@ def search(request: SearchRequest):
 
             # Initialize Fuzon matcher
             matcher = TermMatcher.from_files([tmpfile_path])
-            top_terms = matcher.top(request.search, 10)
+            top_terms = [term.uri for term in matcher.top(request.search, 10)]
 
         else:
             g = Graph()
@@ -46,10 +46,6 @@ def search(request: SearchRequest):
                 SELECT DISTINCT ?s WHERE { ?s ?p ?o .}
             """)
             top_terms = [row[0] for row in qres]  
-            print("SPARQL query URIs:")
-            for row in qres:
-                print(str(row[0]))
-
 
         results = {
             "head": {
@@ -68,7 +64,6 @@ def search(request: SearchRequest):
             }
         }
 
-        print(results)
         return JSONResponse(content=results)
 
     except Exception as e:
