@@ -6,7 +6,7 @@ from imaging_plaza_search.data_fetch import (
     get_fuzon_query,
     get_subjects_query,
     execute_query,
-    test_connection
+    test_connection,
 )
 from rdflib import Graph
 from pyfuzon import TermMatcher
@@ -31,6 +31,7 @@ if test_connection(db_host=db_host, db_user=db_user, db_password=db_password) is
 else:
     print("Connection to GraphDB instance successful.")
 
+
 @app.post("/v1/search")
 def search(request: SearchRequest):
 
@@ -50,8 +51,11 @@ def search(request: SearchRequest):
             matcher = TermMatcher.from_files([tmpfile_path])
             threshold = 0.8
             all_terms = matcher.rank(request.search)
-            top_terms = [term.uri for term in all_terms if matcher.score(request.search)[term] >= threshold]
-
+            top_terms = [
+                term.uri
+                for term in all_terms
+                if matcher.score(request.search)[term] >= threshold
+            ]
 
         else:
             query = get_subjects_query(graph)
