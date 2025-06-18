@@ -6,6 +6,7 @@ from imaging_plaza_search.data_fetch import (
     get_fuzon_query,
     get_subjects_query,
     execute_query,
+    test_connection
 )
 from rdflib import Graph
 from pyfuzon import TermMatcher
@@ -22,12 +23,18 @@ db_user = os.getenv("GRAPHDB_USER")
 db_password = os.getenv("GRAPHDB_PASSWORD")
 graph = os.getenv("GRAPHDB_GRAPH")
 
+if test_connection(db_host=db_host, db_user=db_user, db_password=db_password) is False:
+    raise HTTPException(
+        status_code=500,
+        detail="Failed to connect to the GraphDB instance. Please check your configuration, maybe you are not on EPFL network.",
+    )
+else:
+    print("Connection to GraphDB instance successful.")
 
 @app.post("/v1/search")
 def search(request: SearchRequest):
 
     try:
-        # If search string provided: use Fuzon with full CONSTRUCT query
         if request.search:
             query = get_fuzon_query(graph, request.filters)
             nt_data = execute_query(
@@ -41,10 +48,12 @@ def search(request: SearchRequest):
                 tmpfile_path = tmpfile.name
 
             matcher = TermMatcher.from_files([tmpfile_path])
-            top_terms = [term.uri for term in matcher.rank(request.search)]
+            threshold = 0.8
+            all_terms = matcher.rank(request.search)
+            top_terms = [term.uri for term in all_terms if matcher.score(request.search)[term] >= threshold]
+
 
         else:
-            # Use lightweight SELECT query to just get matching subject URIs
             query = get_subjects_query(graph)
             result_json = execute_query(
                 db_host, db_user, db_password, query, return_format="json"
