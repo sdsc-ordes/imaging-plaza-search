@@ -47,14 +47,13 @@ def search(request: SearchRequest):
             ) as tmpfile:
                 tmpfile.write(nt_data)
                 tmpfile_path = tmpfile.name
-
+            
             matcher = TermMatcher.from_files([tmpfile_path])
-            print(open(file=tmpfile_path).read())
+            threshold = 0.5
+            clean_search = request.search.replace(" ", "")
 
-            threshold = 0.9
-            scores = matcher.score(request.search)
-            ranked_terms = matcher.rank(request.search)
-
+            scores = matcher.score(clean_search)
+            ranked_terms = matcher.rank(clean_search)
             # Create a lookup from term URI to score
             uri_to_score = {
                 term.uri: score
@@ -67,8 +66,6 @@ def search(request: SearchRequest):
                 if uri_to_score.get(term.uri, 0) >= threshold
             ]
 
-            
-            # top_terms = [term.uri for term in matcher.rank(request.search)]
 
         else:
             query = get_subjects_query(graph)

@@ -50,20 +50,18 @@ def get_fuzon_query(graph: str, filters: Optional[List[Filter]]) -> str:
     PREFIX schema: <http://schema.org/>
     PREFIX imag: <https://imaging-plaza.epfl.ch/ontology#>
     PREFIX fuzon: <http://example.org/fuzon#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
     CONSTRUCT {{
-        ?s rdfs:label ?literal .
+        ?s rdfs:label ?label .
+        ?s schema:name ?name .
     }}
     WHERE {{
         GRAPH <{graph}> {{
             ?s rdf:type schema:SoftwareSourceCode ;
-               ?p ?o .
-
-            OPTIONAL {{ ?o ?p2 ?o2 .
-                       OPTIONAL {{ ?o2 ?p3 ?o3 }} }}
-
-            FILTER(isLiteral(?o))
-            BIND(str(?o) AS ?literal)
+               OPTIONAL {{?s rdfs:label ?label; }}
+               OPTIONAL {{?s schema:name ?name ; }}
+               .
             {filter_conditions}
         }}
     }}
