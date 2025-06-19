@@ -52,10 +52,7 @@ def get_fuzon_query(graph: str, filters: Optional[List[Filter]]) -> str:
     PREFIX fuzon: <http://example.org/fuzon#>
 
     CONSTRUCT {{
-        ?s fuzon:searchIndexPredicate ?literal .
-        ?s ?p ?o .
-        ?o ?p2 ?o2 .
-        ?o2 ?p3 ?o3 .
+        ?s rdfs:label ?literal .
     }}
     WHERE {{
         GRAPH <{graph}> {{

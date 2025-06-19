@@ -6,7 +6,7 @@ from imaging_plaza_search.data_fetch import (
     get_fuzon_query,
     get_subjects_query,
     execute_query,
-    test_connection,
+    test_connection
 )
 from rdflib import Graph
 from pyfuzon import TermMatcher
@@ -49,13 +49,26 @@ def search(request: SearchRequest):
                 tmpfile_path = tmpfile.name
 
             matcher = TermMatcher.from_files([tmpfile_path])
-            threshold = 0.8
-            all_terms = matcher.rank(request.search)
+            print(open(file=tmpfile_path).read())
+
+            threshold = 0.9
+            scores = matcher.score(request.search)
+            ranked_terms = matcher.rank(request.search)
+
+            # Create a lookup from term URI to score
+            uri_to_score = {
+                term.uri: score
+                for term, score in zip(matcher.terms, scores)
+            }
+
             top_terms = [
                 term.uri
-                for term in all_terms
-                if matcher.score(request.search)[term] >= threshold
+                for term in ranked_terms
+                if uri_to_score.get(term.uri, 0) >= threshold
             ]
+
+            
+            # top_terms = [term.uri for term in matcher.rank(request.search)]
 
         else:
             query = get_subjects_query(graph)
