@@ -18,7 +18,7 @@ dependencies = [
     "requests==2.32.3",
     "pydantic==2.10.3",
     "pyfuzon==0.4.0",
-    "RapidFuzz==3.10.0"
+    "RapidFuzz==3.13.0"
 ]
 
 [dependency-groups]
