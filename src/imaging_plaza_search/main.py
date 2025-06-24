@@ -49,7 +49,7 @@ def search(request: SearchRequest):
                 tmpfile_path = tmpfile.name
             
             matcher = TermMatcher.from_files([tmpfile_path])
-            threshold = 0.5
+            threshold = float(os.getenv("SEARCH_THRESHOLD"))
             clean_search = request.search.replace(" ", "")
 
             scores = matcher.score(clean_search)
