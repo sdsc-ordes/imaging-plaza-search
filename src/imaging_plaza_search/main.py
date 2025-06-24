@@ -49,6 +49,10 @@ def search(request: SearchRequest):
             with tempfile.NamedTemporaryFile(mode="w+", suffix=".nt", delete=False) as tmpfile:
                 tmpfile.write(nt_data)
                 tmpfile_path = tmpfile.name
+            
+            matcher = TermMatcher.from_files([tmpfile_path])
+            threshold = float(os.getenv("SEARCH_THRESHOLD"))
+            clean_search = request.search.replace(" ", "")
 
             # 3. Parse RDF graph from file
             g = Graph()
@@ -61,7 +65,6 @@ def search(request: SearchRequest):
 
             # 5. Clean search input and fuzzy match with rapidfuzz
             clean_search = request.search.replace(" ", "")
-            threshold = 60
             if clean_search:
                 # 1. Fuzzy match mode
                 raw_results = process.extract(
