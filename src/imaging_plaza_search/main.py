@@ -6,7 +6,7 @@ from imaging_plaza_search.data_fetch import (
     get_fuzon_query,
     get_subjects_query,
     execute_query,
-    test_connection
+    test_connection,
 )
 from rdflib import Graph, URIRef
 from pyfuzon import TermMatcher
@@ -35,7 +35,6 @@ else:
 
 
 @app.post("/v1/search")
-
 def search(request: SearchRequest):
     try:
         if request.search:
@@ -46,10 +45,12 @@ def search(request: SearchRequest):
             )
 
             # 2. Write to temporary NT file
-            with tempfile.NamedTemporaryFile(mode="w+", suffix=".nt", delete=False) as tmpfile:
+            with tempfile.NamedTemporaryFile(
+                mode="w+", suffix=".nt", delete=False
+            ) as tmpfile:
                 tmpfile.write(nt_data)
                 tmpfile_path = tmpfile.name
-            
+
             matcher = TermMatcher.from_files([tmpfile_path])
             threshold = float(os.getenv("SEARCH_THRESHOLD"))
             clean_search = request.search.replace(" ", "")
@@ -60,7 +61,7 @@ def search(request: SearchRequest):
 
             # 4. Build mapping of labels to URIs
             label_to_uri = {}
-            for s, p, o in g.triples((None, URIRef("http://schema.org/name") , None)):
+            for s, p, o in g.triples((None, URIRef("http://schema.org/name"), None)):
                 label_to_uri[str(o)] = str(s)
 
             # 5. Clean search input and fuzzy match with rapidfuzz
@@ -103,7 +104,8 @@ def search(request: SearchRequest):
                                 "type": "uri",
                                 "value": (
                                     str(term)[1:-1]
-                                    if str(term).startswith("<") and str(term).endswith(">")
+                                    if str(term).startswith("<")
+                                    and str(term).endswith(">")
                                     else str(term)
                                 ),
                             }
@@ -113,7 +115,6 @@ def search(request: SearchRequest):
                 },
             }
 
-        
         return JSONResponse(content=results)
 
     except Exception as e:
