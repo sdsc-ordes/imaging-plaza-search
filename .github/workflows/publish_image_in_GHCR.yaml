@@ -5,6 +5,8 @@ on:
     branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main", "develop" ]
+    
+  workflow_dispatch:
 
 jobs:
   build-and-publish:
@@ -16,6 +18,7 @@ jobs:
     # Skip building images for draft PRs or very old branches
     if: |
       github.event_name == 'push' || 
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' && 
        github.event.pull_request.draft == false)
 
