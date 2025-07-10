@@ -15,17 +15,16 @@ def clean_uri(term: str) -> str:
     return term_str
 
 
-
-def format_results(sorted_terms, ):
+def format_results(
+    sorted_terms,
+):
+    """
+    Format the sorted terms into a SPARQL-like result structure.
+    """
     bindings = []
 
     for uri, score, idx in sorted_terms:
-        bindings.append({
-            "s": {
-                "type": "uri",
-                "value": uri
-            }
-        })
+        bindings.append({"s": {"type": "uri", "value": uri}})
 
     result = {
         "head": {"vars": ["s"]},

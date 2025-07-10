@@ -4,18 +4,18 @@ from fastapi.responses import JSONResponse
 from imaging_plaza_search.models import SearchRequest
 from imaging_plaza_search.data_fetch import (
     get_literals_query,
-    get_subjects_query,
     execute_query,
     test_connection,
 )
 from imaging_plaza_search.config import LABEL_PREDICATES_WEIGHTED
-from imaging_plaza_search.utils import (clean_uri, format_results) 
+from imaging_plaza_search.utils import clean_uri, format_results
 from rdflib import Graph, URIRef
 import os
 from dotenv import load_dotenv
 import tempfile
 from rapidfuzz import process, fuzz
 from collections import defaultdict
+
 load_dotenv()
 
 app = FastAPI()
@@ -38,41 +38,9 @@ else:
     print("Connection to GraphDB instance successful.")
 
 
-
-
-
-def sort_terms(results, value_to_uri, label_predicates):
-    # Convert the list of (label, score, index) into a sorted list
-    def get_weighted_score(index):
-        uri = str(index)
-        if uri not in value_to_uri:
-            return 0
-
-        weighted_sum = sum(
-            weight
-            for pred, weight in label_predicates
-            if pred in value_to_uri[uri]
-        )
-        normalization = max(
-            1,
-            sum(
-                len(value_to_uri[uri].get(pred, []))
-                for pred, _ in label_predicates
-                if pred in value_to_uri[uri]
-            )
-        )
-        
-
-        print(f"uri: {uri}, weighted_sum: {weighted_sum}, normalization: {normalization}")
-        return weighted_sum / normalization
-    # Sort results by weighted score (descending)
-    return sorted(results, key=lambda tup: get_weighted_score(tup[2]), reverse=True)
-
-
 @app.post("/v1/search")
 def search(request: SearchRequest):
     try:
-        top_terms = []
         value_to_uri = defaultdict(lambda: defaultdict(list))
         if request.search and request.search.strip() != "":
             # 1. Query the data
@@ -91,8 +59,6 @@ def search(request: SearchRequest):
             # 3. Parse RDF graph from file
             g = Graph()
             g.parse(tmpfile_path, format="nt")
-
-            
 
             raw_triples = []
             choices = []
@@ -114,11 +80,8 @@ def search(request: SearchRequest):
                     limit=None,
                 )
 
-                print((len(raw_results)))
-                sorted_terms = sort_terms(raw_results, value_to_uri, label_predicates)
-
-            # Step 1: Collect scores per predicate per subject
-                predicate_scores = defaultdict(lambda: defaultdict(list))  # subject -> predicate -> list of scores
+                # Step 1: Collect scores per predicate per subject
+                predicate_scores = defaultdict(lambda: defaultdict(list))
 
                 for label, score, idx in raw_results:
                     s, p, o = raw_triples[idx]
@@ -127,8 +90,7 @@ def search(request: SearchRequest):
                         if URIRef(p) == predicate:
                             weighted_score = score * weight
                             predicate_scores[s][predicate].append(weighted_score)
-                print(f"Predicate scores: {predicate_scores}")
-            # Step 2: Average scores per predicate, then sum for each subject
+                # Step 2: Average scores per predicate, then sum for each subject
                 summed_scores = {}
                 for s, pred_dict in predicate_scores.items():
                     total = 0
@@ -137,27 +99,29 @@ def search(request: SearchRequest):
                         total += avg_score
                     summed_scores[s] = total
 
-            # Step 3: Sort and format
+                # Step 3: Sort and format
+                weighted_score_threshold = 50
                 sorted_terms = sorted(
-                    summed_scores.items(), key=lambda item: item[1], reverse=True
+                    (
+                        (s, score)
+                        for s, score in summed_scores.items()
+                        if score >= weighted_score_threshold
+                    ),
+                    key=lambda item: item[1],
+                    reverse=True,
                 )
-                sorted_terms = [(s, score, idx) for idx, (s, score) in enumerate(sorted_terms)]
 
-                print(f"Sorted terms: {sorted_terms}")
+                sorted_terms = [
+                    (s, score, idx) for idx, (s, score) in enumerate(sorted_terms)
+                ]
 
                 return JSONResponse(content=format_results(sorted_terms))
- 
-                            
-
-
 
         else:
-            # 3. Return all subjects if no search term
             query = get_literals_query(graph, request.filters)
             nt_data = execute_query(
                 db_host, db_user, db_password, query, return_format="nt"
             )
-            # 2. Write to temporary NT file
             with tempfile.NamedTemporaryFile(
                 mode="w+", suffix=".nt", delete=False
             ) as tmpfile:
@@ -165,34 +129,21 @@ def search(request: SearchRequest):
                 tmpfile_path = tmpfile.name
 
             clean_search = request.search.replace(" ", "")
-            # 3. Parse RDF graph from file
             g = Graph()
             g.parse(tmpfile_path, format="nt")
 
-            # Define predicates with associated weights for later sorting
             raw_triples = []
             for predicate in label_predicates:
                 for s, p, o in g.triples((None, predicate, None)):
-                    value_to_uri[str(s)][predicate].append(str(o)) #dont use append
-                    raw_triples.append((str(s), str(p), str(o)))  # list append
+                    value_to_uri[str(s)][predicate].append(str(o))
+                    raw_triples.append((str(s), str(p), str(o)))
             unique_subjects = set(s for s, _, _ in raw_triples)
 
             bindings = []
             for s in unique_subjects:
-                bindings.append({
-                    "s": {
-                        "type": "uri",
-                        "value": s
-                    }
-                })
+                bindings.append({"s": {"type": "uri", "value": s}})
 
-            return {
-                "head": {"vars": ["s"]},
-                "results": {"bindings": bindings}
-            }
-
-
-
+            return {"head": {"vars": ["s"]}, "results": {"bindings": bindings}}
 
     except Exception as e:
         return JSONResponse(
