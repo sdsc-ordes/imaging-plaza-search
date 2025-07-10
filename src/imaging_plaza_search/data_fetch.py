@@ -43,7 +43,7 @@ def execute_query(
         raise RuntimeError(f"HTTPError during SPARQL query: {e}")
 
 
-def get_fuzon_query(graph: str, filters: Optional[List[Filter]]) -> str:
+def get_literals_query(graph: str, filters: Optional[List[Filter]]) -> str:
     filter_conditions = build_filter_conditions(filters)
     return f"""
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -53,14 +53,15 @@ def get_fuzon_query(graph: str, filters: Optional[List[Filter]]) -> str:
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
     CONSTRUCT {{
-        ?s rdfs:label ?label .
-        ?s schema:name ?name .
+        ?s ?p ?o
     }}
     WHERE {{
         GRAPH <{graph}> {{
+        ?s ?p ?o .
             ?s rdf:type schema:SoftwareSourceCode ;
-               OPTIONAL {{?s rdfs:label ?label; }}
-               OPTIONAL {{?s schema:name ?name ; }}
+            #    OPTIONAL {{?s rdfs:label ?label; }}
+            #    OPTIONAL {{?s schema:name ?name ; }}
+            FILTER(isLiteral(?o))
                .
             {filter_conditions}
         }}
