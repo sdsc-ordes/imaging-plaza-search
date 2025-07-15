@@ -37,6 +37,10 @@ if test_connection(db_host=db_host, db_user=db_user, db_password=db_password) is
 else:
     print("Connection to GraphDB instance successful.")
 
+@app.get("/")
+def welcome():
+    return {"Welcome to the Imaging Plaza Search service v0.1.0"}
+
 
 @app.post("/v1/search")
 def search(request: SearchRequest):
