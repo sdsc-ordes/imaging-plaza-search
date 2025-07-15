@@ -17,10 +17,13 @@ db_user = os.getenv("GRAPHDB_USER")
 db_password = os.getenv("GRAPHDB_PASSWORD")
 graph = os.getenv("GRAPHDB_GRAPH")
 
+@app.get("/")
+def welcome():
+    return {"Welcome to the Imaging Plaza Search service v0.1.0"}
+
 
 @app.post("/v1/search")
 def search(request: SearchRequest):
-    print(request)
 
     try:
         # Get RDF graph from GraphDB in N-Triples format
