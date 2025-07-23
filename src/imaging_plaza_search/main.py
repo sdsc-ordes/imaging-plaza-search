@@ -72,8 +72,6 @@ def search(request: SearchRequest):
                 raw_triples.append((s_str, p_str, o_str))
                 choices.append(o_str)
 
-            clean_search = request.search.replace(" ", "")
-
             if clean_search:
                 raw_results = process.extract(
                     clean_search,
