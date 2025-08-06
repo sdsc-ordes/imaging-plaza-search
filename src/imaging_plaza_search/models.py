@@ -7,6 +7,7 @@ class Filter(BaseModel):
     schema_key: str
     value: List[str]
 
+
 class SearchRequest(BaseModel):
     search: str
     filters: Optional[List[Filter]] = Field(default_factory=list)
